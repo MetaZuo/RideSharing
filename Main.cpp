@@ -21,6 +21,7 @@ int main() {
     
     GRBEnv *env = new GRBEnv();
     now_time = 0;
+    total_reqs = served_reqs = 0;
 
     map<pair<int, int>, int> *dist = new map<pair<int, int>, int>;
     initialize(true);
@@ -38,9 +39,10 @@ int main() {
 
     vector<Request> unserved;
 
-    FILE *in = get_requests_file("input/part_reqs.csv");
+    FILE *in = get_requests_file("input/requests.csv");
 
     while (true) { // TODO last update?
+        time_t tick = clock();
         now_time += time_step;
 
         requests.clear();
@@ -76,7 +78,17 @@ int main() {
         if (!hasMore) {
             break;
         }
+        time_t tock = clock();
+        if (double(tock - tick) / CLOCKS_PER_SEC >= time_step) {
+            printf("\n************************\n");
+            printf("     Time Limit Exceeded!    \n");
+            printf("************************\n");
+            break;
+        }
     }
+    finish_all(vehicles);
+
+    print_stats();
 
     fclose(in);
 

@@ -2,6 +2,7 @@
 #define _VEHICLE_CPP_
 
 #include <vector>
+#include <set>
 #include "globals.cpp"
 using namespace std;
 
@@ -30,6 +31,23 @@ public:
 
     int get_time_to_next_node() {
         return this->timeToNextNode;
+    }
+
+    int get_num_passengers() {
+        return passengers.size();
+    }
+
+    void print_passengers() {
+        for (int i = 0; i < passengers.size(); i++) {
+            printf("%d, ", passengers[i].unique);
+        }
+        printf("\n");
+    }
+
+    void insert_targets(set<int>& target) {
+        for (int i = 0; i < passengers.size(); i++) {
+            target.insert(passengers[i].end);
+        }
     }
 
     void check_passengers(int nowTime, int stop, bool& exceeded, int& sumCost,
@@ -104,19 +122,35 @@ public:
             // hasn't got on board
             if (iterPsngr->scheduledOnTime > nextArriveTime) {
                 newRequests.push_back(*iterPsngr);
+                printf("%d waiting, ", iterPsngr->unique);
             } else if (iterPsngr->scheduledOffTime <= nextArriveTime) {
                 // already got off
                 // TODO add into results
+                served_reqs++;
+                printf("%d off, ", iterPsngr->unique);
+                servedUids.insert(iterPsngr->unique);
             } else { // now on board
                 iterPsngr->onBoard = true;
+                printf("%d on, ", iterPsngr->unique);
                 newPassengers.push_back(*iterPsngr);
             }
         }
+        printf("\n");
         this->passengers = newPassengers;
     }
 
     void set_path(vector<pair<int, int> >& path) {
         this->scheduledPath = path;
+    }
+
+    void finish_route() {
+        vector<Request>::iterator iterPsngr = this->passengers.begin();
+        for (; iterPsngr != this->passengers.end(); iterPsngr++) {
+            served_reqs++;
+            // printf("%d on, ", iterPsngr->unique);
+            servedUids.insert(iterPsngr->unique);
+        }
+        // printf("\n");
     }
 };
 

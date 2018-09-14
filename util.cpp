@@ -53,6 +53,7 @@ bool read_requests(FILE*& in, vector<Request>& requests, int toTime,
             int shortest = get_dist(start, end, dist);
             r.expectedOffTime = reqTime + shortest / velocity;
             requests.push_back(r);
+            total_reqs++;
             if (reqTime > toTime) {
                 return true;
             }
@@ -75,10 +76,30 @@ void handle_unserved(vector<Request>& unserved, vector<Request>& requests,
 void update_vehicles(vector<Vehicle>& vehicles, vector<Request>& requests,
     int nowTime) {
     
+    int idx = 0;
     vector<Vehicle>::iterator it = vehicles.begin();
     for (; it != vehicles.end(); it++) {
+        // printf("V #%d: ", idx++);
         it->update(nowTime, requests);
     }
+}
+
+void finish_all(vector<Vehicle>& vehicles) {
+    int idx = 0;
+    vector<Vehicle>::iterator it = vehicles.begin();
+    for (; it != vehicles.end(); it++) {
+        // printf("V #%d: ", idx++);
+        it->finish_route();
+    }
+}
+
+void print_stats() {
+    printf("\nService rate: %d / %d = %f\n",
+        served_reqs, total_reqs, (double(served_reqs)) / total_reqs);
+    for (set<int>::iterator it = servedUids.begin(); it != servedUids.end(); it++) {
+        printf("%d, ", *it);
+    }
+    printf("\n");
 }
 
 #endif

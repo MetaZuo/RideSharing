@@ -170,6 +170,8 @@ map<pair<int, int>, int> *dist, bool decided) {
         src_dst[req->start].push_back(req->end);
         target.insert(req->start);
     }
+    // insert targets of old passengers
+    vehicle.insert_targets(target);
 
     ansCost = max_delay_sec * numReqs;
     ansTravelled = -1;
@@ -181,13 +183,29 @@ map<pair<int, int>, int> *dist, bool decided) {
 
     dfs(vehicle, reqs, numReqs, target, src_dst, path, schedule, dist, 0, 0,
         now_time + vehicle.get_time_to_next_node(), decided);
-    
-    if (decided) {
-        vehicle.set_path(ansPath);
-        vehicle.set_passengers(ansSchedule);
-    }
 
     if (ansTravelled >= 0) {
+        if (decided) {
+            int tmp = numReqs + vehicle.get_num_passengers();
+            int schcnt = ansSchedule.size();
+            if (tmp != schcnt) {
+                printf("\n*******\n");
+                printf("%d != %d + %d\n", (int)ansSchedule.size(), numReqs, vehicle.get_num_passengers());
+                printf("\nnew reqs: ");
+                for (int i = 0; i < numReqs; i++) {
+                    printf("%d, ", reqs[i]->unique);
+                }
+                printf("old psngrs: ");
+                vehicle.print_passengers();
+                printf("scheduled: ");
+                for (int i = 0; i < ansSchedule.size(); i++) {
+                    printf("%d, ", ansSchedule[i].unique);
+                }
+                printf("\n********\n");
+            }
+            vehicle.set_path(ansPath);
+            vehicle.set_passengers(ansSchedule);
+        }
         // for (int i = 0; i < ansPath.size(); i++) {
             // printf("%d, ", ansPath[i]);
         // }

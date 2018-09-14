@@ -7,6 +7,9 @@ public:
     int reqTime, expectedOffTime;
     int scheduledOnTime, scheduledOffTime;
     bool onBoard;
+    int unique;
+
+    static int nextUid;
 
     Request() {}
 
@@ -16,7 +19,10 @@ public:
         this->reqTime = reqTime;
         this->onBoard = false;
         this->scheduledOnTime = -1;
+        this->unique = nextUid++;
     }
 };
+
+int Request::nextUid = 0;
 
 #endif

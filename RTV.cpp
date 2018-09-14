@@ -349,11 +349,13 @@ public:
         vector<vector<pair<int, int> >::iterator> edgeIters, edgeEnds;
         vector<int> tIdxes;
         int tripSize = max_capacity + 1;
+        /*
         printf("size of trips: %d %d\n", tIdx_vCostIdxes.size(), trips.size());
         for (iterTV = tIdx_vCostIdxes.begin(); iterTV != tIdx_vCostIdxes.end(); iterTV++) {
             printf("%d, ", trips[iterTV->first.tIdx].size());
         }
         printf("\n");
+         */
         for (iterTV = tIdx_vCostIdxes.begin(); iterTV != tIdx_vCostIdxes.end(); iterTV++) {
             if (tripSize > trips[iterTV->first.tIdx].size()) {
                 greedy_assign_same_trip_size(
@@ -409,12 +411,12 @@ public:
                     Request *reqs[max_capacity];
                     int tripSize = 0;
                     vector<int>::iterator iter = trips[tIdx].begin();
-                    printf("%d", *iter);
+                    printf("%d", requests[*iter].unique);
                     reqs[tripSize++] = &requests[*iter];
                     cnt++;
                     iter++;
                     while (iter != trips[tIdx].end()) {
-                        printf(", %d", *iter);
+                        printf(", %d", requests[*iter].unique);
                         reqs[tripSize++] = &requests[*iter];
                         cnt++;
                         iter++;
@@ -436,7 +438,7 @@ public:
         for (iterRV = rId_tIdxes.begin(); iterRV != rId_tIdxes.end(); iterRV++) {
             if (chi[iterRV->first].get(GRB_DoubleAttr_X) > 1.0 - minimal) {
                 unservedCollector.push_back(requests[iterRV->first]);
-                printf("%d, ", iterRV->first);
+                printf("%d, ", requests[iterRV->first].unique);
                 cnt++;
             }
         }

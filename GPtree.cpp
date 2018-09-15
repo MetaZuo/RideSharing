@@ -1905,4 +1905,19 @@ int find_path(int S, int T, vector<int> &order) {
 	return tree.find_path(S, T, order);
 }
 
+int get_dist(int S, int T, map<pair<int, int>, int> *dist) {
+    pair<int, int> st;
+    if (S < T) {
+        st = make_pair(S, T);
+    } else {
+        st = make_pair(T, S);
+    }
+    if (dist->find(st) != dist->end()) {
+        return (*dist)[st];
+    }
+    int calculatedDist = search_cache(S - 1, T - 1);
+    (*dist)[st] = calculatedDist;
+    return calculatedDist;
+}
+
 #endif 

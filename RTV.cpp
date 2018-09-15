@@ -4,6 +4,7 @@
 #include <map>
 #include <algorithm>
 #include <string>
+#include <ctime>
 #include "globals.cpp"
 #include "RV.cpp"
 #include "gurobi_c++.h"
@@ -104,7 +105,9 @@ class RTVGraph {
 
     void build_single_vehicle(int vehicleId, RVGraph *rvGraph,
     vector<Vehicle>& vehicles, vector<Request>& requests,
-    map<pair<int, int>, int> *dist) {
+    map<pair<int, int>, int> *dist, double timeLimit) {
+
+        time_t begin = clock();
 
         Vehicle& vehicle = vehicles[vehicleId];
         int vIdx = addVehicleId(vehicleId);
@@ -151,6 +154,10 @@ class RTVGraph {
                         add_edge_trip_vehicle(tIdx, make_pair(cost, vIdx));
                     }
                 }
+                time_t now = clock();
+                if (double(now - begin) / CLOCKS_PER_SEC > timeLimit) {
+                    return;
+                }
             }
         }
 
@@ -195,6 +202,10 @@ class RTVGraph {
                         int tIdx = getTIdx(trip);
                         tIdxListOfCapacity[k].push_back(tIdx);
                         add_edge_trip_vehicle(tIdx, make_pair(cost, vIdx));
+                    }
+                    time_t now = clock();
+                    if (double(now - begin) / CLOCKS_PER_SEC > timeLimit) {
+                        return;
                     }
                 }
             }
@@ -274,9 +285,10 @@ public:
         numTrips = 0;
         numVehicles = 0;
         TIdxComparable::rtvGraph = this;
+        double timeLimit = double(time_step) * 0.8 / rvGraph->get_vehicle_num();
         for (int i = 0; i < vehicles.size(); i++) {
             if (rvGraph->has_vehicle(i)) {
-                build_single_vehicle(i, rvGraph, vehicles, requests, dist);
+                build_single_vehicle(i, rvGraph, vehicles, requests, dist, timeLimit);
             }
         }
         sort_edges();

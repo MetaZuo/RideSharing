@@ -6,6 +6,7 @@ using namespace std;
 
 int now_time;
 int total_reqs, served_reqs;
+long long total_dist, unserved_dist, raw_dist;
 
 set<int> servedUids;
 

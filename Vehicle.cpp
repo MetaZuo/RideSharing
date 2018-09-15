@@ -2,14 +2,16 @@
 #define _VEHICLE_CPP_
 
 #include <vector>
+#include <queue>
 #include <set>
 #include "globals.cpp"
+#include "GPtree.cpp"
 using namespace std;
 
 class Vehicle {
     int location, timeToNextNode;
     vector<Request> passengers;
-    vector<pair<int, int> > scheduledPath;
+    queue<pair<int, int> > scheduledPath;
 
 public:
     Vehicle(){
@@ -91,27 +93,23 @@ public:
         this->passengers = psngrs;
     }
 
-    void update(int nowTime, vector<Request>& newRequests) {
+    void update(int nowTime, vector<Request>& newRequests,
+        map<pair<int, int>, int> *dist) {
+        
         if (this->scheduledPath.empty()) {
             return;
         }
-        vector<pair<int, int> >::iterator it = this->scheduledPath.begin();
-        bool finished = true;
-        while (it != this->scheduledPath.end()) {
-            int schedTime = it->first;
-            int node = it->second;
+        this->timeToNextNode = 0;
+        while (!this->scheduledPath.empty()) {
+            int schedTime = this->scheduledPath.front().first;
+            int node = this->scheduledPath.front().second;
+            total_dist += get_dist(this->location, node, dist);
+            this->location = node;
+            this->scheduledPath.pop();
             if (schedTime >= nowTime) {
                 this->timeToNextNode = schedTime - nowTime;
-                this->location = node;
-                finished = false;
                 break;
             }
-            it++;
-        }
-        if (finished) {
-            this->timeToNextNode = 0;
-            this->location = this->scheduledPath.back().second;
-            this->scheduledPath.clear();
         }
 
         int nextArriveTime = nowTime + this->timeToNextNode;
@@ -140,7 +138,13 @@ public:
     }
 
     void set_path(vector<pair<int, int> >& path) {
-        this->scheduledPath = path;
+        while (!this->scheduledPath.empty()) {
+            this->scheduledPath.pop();
+        }
+        vector<pair<int, int> >::iterator it = path.begin();
+        for (; it != path.end(); it++) {
+            this->scheduledPath.push(*it);
+        }
     }
 
     void finish_route() {

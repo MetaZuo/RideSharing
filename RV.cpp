@@ -56,6 +56,10 @@ public:
         return (car_req_cost.find(vehicle) != car_req_cost.end());
     }
 
+    int get_vehicle_num() {
+        return int(car_req_cost.size());
+    }
+
     bool has_reqs_edge(int r1, int r2) {
         return (req_inter.find(make_pair(r1, r2)) != req_inter.end());
     }

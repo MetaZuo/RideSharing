@@ -6,21 +6,6 @@
 #include "GPtree.cpp"
 using namespace std;
 
-int get_dist(int S, int T, map<pair<int, int>, int> *dist) {
-    pair<int, int> st;
-    if (S < T) {
-        st = make_pair(S, T);
-    } else {
-        st = make_pair(T, S);
-    }
-    if (dist->find(st) != dist->end()) {
-        return (*dist)[st];
-    }
-    int calculatedDist = search_cache(S - 1, T - 1);
-    (*dist)[st] = calculatedDist;
-    return calculatedDist;
-}
-
 FILE* get_requests_file(const char* file) {
     FILE *in = NULL;
     in = fopen(file, "r");
@@ -50,9 +35,10 @@ bool read_requests(FILE*& in, vector<Request>& requests, int toTime,
         num = fscanf(in, "%d,%d,%d\n", &reqTime, &start, &end);
         if (num != EOF) {
             Request r(start, end, reqTime);
-            int shortest = get_dist(start, end, dist);
-            r.expectedOffTime = reqTime + shortest / velocity;
+            r.shortestDist = get_dist(start, end, dist);
+            r.expectedOffTime = reqTime + r.shortestDist / velocity;
             requests.push_back(r);
+            raw_dist += r.shortestDist;
             total_reqs++;
             if (reqTime > toTime) {
                 return true;
@@ -69,37 +55,47 @@ void handle_unserved(vector<Request>& unserved, vector<Request>& requests,
     for (; iter != unserved.end(); iter++) {
         if (nowTime - iter->reqTime <= max_wait_sec) {
             requests.push_back(*iter);
+        } else {
+            unserved_dist += iter->shortestDist;
         }
     }
 }
 
 void update_vehicles(vector<Vehicle>& vehicles, vector<Request>& requests,
-    int nowTime) {
+    int nowTime, map<pair<int, int>, int> *dist) {
     
     int idx = 0;
     vector<Vehicle>::iterator it = vehicles.begin();
     for (; it != vehicles.end(); it++) {
         // printf("V #%d: ", idx++);
-        it->update(nowTime, requests);
+        it->update(nowTime, requests, dist);
     }
 }
 
-void finish_all(vector<Vehicle>& vehicles) {
+void finish_all(vector<Vehicle>& vehicles, vector<Request>& unserved) {
     int idx = 0;
     vector<Vehicle>::iterator it = vehicles.begin();
     for (; it != vehicles.end(); it++) {
         // printf("V #%d: ", idx++);
         it->finish_route();
     }
+    vector<Request>::iterator iter = unserved.begin();
+    for (; iter != unserved.end(); iter++) {
+        unserved_dist += iter->shortestDist;
+    }
 }
 
 void print_stats() {
     printf("\nService rate: %d / %d = %f\n",
         served_reqs, total_reqs, (double(served_reqs)) / total_reqs);
+    /*
     for (set<int>::iterator it = servedUids.begin(); it != servedUids.end(); it++) {
         printf("%d, ", *it);
     }
     printf("\n");
+     */
+    printf("Dratio = %f\n", double(total_dist + unserved_dist) / raw_dist);
+    printf("Eratio = %f\n", double(total_dist) / (raw_dist - unserved_dist));
 }
 
 #endif

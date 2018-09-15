@@ -22,6 +22,7 @@ int main() {
     GRBEnv *env = new GRBEnv();
     now_time = 0;
     total_reqs = served_reqs = 0;
+    total_dist = unserved_dist = raw_dist = 0;
 
     map<pair<int, int>, int> *dist = new map<pair<int, int>, int>;
     initialize(true);
@@ -58,7 +59,7 @@ int main() {
         } else {
             hasMore = false;
         }
-        update_vehicles(vehicles, requests, now_time);
+        update_vehicles(vehicles, requests, now_time, dist);
 
         printf("Building RV graph...\n");
         RVGraph *RV = new RVGraph(vehicles, requests, dist);
@@ -86,7 +87,7 @@ int main() {
             break;
         }
     }
-    finish_all(vehicles);
+    finish_all(vehicles, unserved);
 
     print_stats();
 

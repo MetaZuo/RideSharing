@@ -4,6 +4,7 @@
 class Request {
 public:
     int start, end;
+    int shortestDist;
     int reqTime, expectedOffTime;
     int scheduledOnTime, scheduledOffTime;
     bool onBoard;

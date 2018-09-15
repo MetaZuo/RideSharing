@@ -2,11 +2,12 @@
 #define _TRAVEL_CPP_
 
 #include <cstdio>
+#include <cassert>
 #include <map>
 #include <set>
 #include <algorithm>
 #include "globals.cpp"
-#include "util.cpp"
+#include "GPtree.cpp"
 #include "Vehicle.cpp"
 #include "Request.cpp"
 using namespace std;
@@ -188,21 +189,7 @@ map<pair<int, int>, int> *dist, bool decided) {
         if (decided) {
             int tmp = numReqs + vehicle.get_num_passengers();
             int schcnt = ansSchedule.size();
-            if (tmp != schcnt) {
-                printf("\n*******\n");
-                printf("%d != %d + %d\n", (int)ansSchedule.size(), numReqs, vehicle.get_num_passengers());
-                printf("\nnew reqs: ");
-                for (int i = 0; i < numReqs; i++) {
-                    printf("%d, ", reqs[i]->unique);
-                }
-                printf("old psngrs: ");
-                vehicle.print_passengers();
-                printf("scheduled: ");
-                for (int i = 0; i < ansSchedule.size(); i++) {
-                    printf("%d, ", ansSchedule[i].unique);
-                }
-                printf("\n********\n");
-            }
+            assert (tmp == schcnt);
             vehicle.set_path(ansPath);
             vehicle.set_passengers(ansSchedule);
         }

@@ -11,6 +11,7 @@ using namespace std;
 class RVGraph {
     map<pair<int, int>, bool> req_inter;
     map<int, map<int, int> > car_req_cost;
+    map<int, vector<pair<int, int> > > req_cost_car;
 
     void add_reqs_edge(int r1, int r2) {
         req_inter[make_pair(r1, r2)] = true;
@@ -18,6 +19,24 @@ class RVGraph {
 
     void add_edge_vehicle_req(int vehicle, int req, int cost) {
         car_req_cost[vehicle][req] = cost;
+        req_cost_car[req].push_back(make_pair(cost, vehicle));
+    }
+
+    void prune() {
+        map<int, vector<pair<int, int> > >::iterator it = req_cost_car.begin();
+        for (; it != req_cost_car.end(); it++) {
+            sort(it->second.begin(), it->second.end());
+            if (it->second.size() <= max_v_per_req) {
+                continue;
+            }
+            for (int idx = max_v_per_req; idx < it->second.size(); idx++) {
+                int vId = it->second[idx].second;
+                car_req_cost[vId].erase(it->first);
+                if (car_req_cost[vId].empty()) {
+                    car_req_cost.erase(vId);
+                }
+            }
+        }
     }
 
 public:
@@ -50,6 +69,7 @@ public:
                 }
             }
         }
+        prune();
     }
 
     bool has_vehicle(int vehicle) {

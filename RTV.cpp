@@ -107,7 +107,7 @@ class RTVGraph {
     vector<Vehicle>& vehicles, vector<Request>& requests,
     map<pair<int, int>, int> *dist, double timeLimit) {
 
-        time_t begin = clock();
+        clock_t beginClock = clock();
 
         Vehicle& vehicle = vehicles[vehicleId];
         int vIdx = addVehicleId(vehicleId);
@@ -115,25 +115,27 @@ class RTVGraph {
         vector<int> tIdxListOfCapacity[max_capacity + 1];
 
         // Add trips of size 1
-        tIdxListOfCapacity[1].reserve(requests.size());
+        if (max_capacity - vehicle.get_num_passengers() > 0) {
+            tIdxListOfCapacity[1].reserve(requests.size());
 
-        vector<pair<int, int> > edges;
-        edges.reserve(requests.size());
-        rvGraph->get_vehicle_edges(vehicleId, edges);
+            vector<pair<int, int> > edges;
+            edges.reserve(requests.size());
+            rvGraph->get_vehicle_edges(vehicleId, edges);
 
-        vector<pair<int, int> >::iterator iter = edges.begin();
-        while (iter != edges.end()) {
-            int reqId = iter->first;
-            int cost = iter->second;
-            vector<int> trip(1);
-            trip[0] = reqId;
-            int tIdx = getTIdx(trip);
-            tIdxListOfCapacity[1].push_back(tIdx);
-            add_edge_trip_vehicle(tIdx, make_pair(cost, vIdx));
-            iter++;
+            vector<pair<int, int> >::iterator iter = edges.begin();
+            while (iter != edges.end()) {
+                int reqId = iter->first;
+                int cost = iter->second;
+                vector<int> trip(1);
+                trip[0] = reqId;
+                int tIdx = getTIdx(trip);
+                tIdxListOfCapacity[1].push_back(tIdx);
+                add_edge_trip_vehicle(tIdx, make_pair(cost, vIdx));
+                iter++;
+            }
         }
 
-        if (max_capacity < 2) {
+        if (max_capacity - vehicle.get_num_passengers() < 2) {
             return;
         }
         // Add trips of size 2
@@ -154,16 +156,19 @@ class RTVGraph {
                         add_edge_trip_vehicle(tIdx, make_pair(cost, vIdx));
                     }
                 }
-                time_t now = clock();
-                if (double(now - begin) / CLOCKS_PER_SEC > timeLimit) {
+                /*
+                clock_t nowClock = clock();
+                if ((double(nowClock - beginClock)) / CLOCKS_PER_SEC > timeLimit) {
+                    printf("TLE at size 2, time = %f\n", (double(nowClock - beginClock)) / CLOCKS_PER_SEC);
                     return;
                 }
+                 */
             }
         }
 
         Request *reqs[max_capacity];
         // Add trips of size k
-        for (int k = 3; k <= max_capacity; k++) {
+        for (int k = 3; k <= max_capacity - vehicle.get_num_passengers(); k++) {
             prevSize = tIdxListOfCapacity[k - 1].size();
             tIdxListOfCapacity[k].reserve(prevSize * (prevSize - 1) / 2);
             for (int i = 0; i < tIdxListOfCapacity[k - 1].size(); i++) {
@@ -203,10 +208,13 @@ class RTVGraph {
                         tIdxListOfCapacity[k].push_back(tIdx);
                         add_edge_trip_vehicle(tIdx, make_pair(cost, vIdx));
                     }
-                    time_t now = clock();
-                    if (double(now - begin) / CLOCKS_PER_SEC > timeLimit) {
+                    /*
+                    clock_t nowClock = clock();
+                    if ((double(nowClock - beginClock)) / CLOCKS_PER_SEC > timeLimit) {
+                        printf("TLE at size %d, time = %f\n", k, (double(nowClock - beginClock)) / CLOCKS_PER_SEC);
                         return;
                     }
+                     */
                 }
             }
         }
@@ -286,11 +294,13 @@ public:
         numVehicles = 0;
         TIdxComparable::rtvGraph = this;
         double timeLimit = double(time_step) * 0.8 / rvGraph->get_vehicle_num();
+        printf("time limit = %f\n", timeLimit);
         for (int i = 0; i < vehicles.size(); i++) {
             if (rvGraph->has_vehicle(i)) {
                 build_single_vehicle(i, rvGraph, vehicles, requests, dist, timeLimit);
             }
         }
+        printf("begin to sort edges\n");
         sort_edges();
     }
 
@@ -447,10 +457,20 @@ public:
         unservedCollector.clear();
         cnt = 0;
         printf("Requests not served: [");
+        /*
         for (iterRV = rId_tIdxes.begin(); iterRV != rId_tIdxes.end(); iterRV++) {
             if (chi[iterRV->first].get(GRB_DoubleAttr_X) > 1.0 - minimal) {
                 unservedCollector.push_back(requests[iterRV->first]);
                 printf("%d, ", requests[iterRV->first].unique);
+                cnt++;
+            }
+        }
+         */
+        for (int rId = 0; rId < numRequests; rId++) {
+            if (rId_tIdxes.find(rId) == rId_tIdxes.end() ||
+                chi[rId].get(GRB_DoubleAttr_X) > 1.0 - minimal) {
+                unservedCollector.push_back(requests[rId]);
+                printf("%d, ", requests[rId].unique);
                 cnt++;
             }
         }

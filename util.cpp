@@ -9,8 +9,6 @@ using namespace std;
 FILE* get_requests_file(const char* file) {
     FILE *in = NULL;
     in = fopen(file, "r");
-    char buf[150];
-    fgets(buf, 150, in);
     return in;
 }
 

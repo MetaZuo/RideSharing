@@ -10,17 +10,20 @@ using namespace std;
 
 class Vehicle {
     int location, timeToNextNode;
+    bool idle;
     vector<Request> passengers;
     queue<pair<int, int> > scheduledPath;
 
 public:
     Vehicle(){
         timeToNextNode = 0;
+        idle = true;
     }
 
     Vehicle(int location) {
         this->location = location;
         this->timeToNextNode = 0;
+        this->idle = true;
     }
 
     int get_location() {
@@ -103,13 +106,20 @@ public:
         while (!this->scheduledPath.empty()) {
             int schedTime = this->scheduledPath.front().first;
             int node = this->scheduledPath.front().second;
-            total_dist += get_dist(this->location, node, dist);
+            if (!this->idle) {
+                total_dist += get_dist(this->location, node, dist);
+            } else {
+                this->idle = false;
+            }
             this->location = node;
             this->scheduledPath.pop();
             if (schedTime >= nowTime) {
                 this->timeToNextNode = schedTime - nowTime;
                 break;
             }
+        }
+        if (this->scheduledPath.empty()) {
+            this->idle = true;
         }
 
         int nextArriveTime = nowTime + this->timeToNextNode;

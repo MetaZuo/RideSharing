@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <ctime>
 #include <map>
 #include <set>
 #include <algorithm>
@@ -160,6 +161,9 @@ void dfs(Vehicle& vehicle, Request *reqs[], int numReqs,
 int travel(Vehicle& vehicle, Request *reqs[], int numReqs,
 map<pair<int, int>, int> *dist, bool decided) {
 
+    clock_t beginClock = clock();
+    travel_cnt++;
+
     set<int> target; // nodes going to arrive at
     map<int, vector<int> > src_dst; // unhandled requests
     // insert new requests: s->t into src_dst
@@ -184,7 +188,7 @@ map<pair<int, int>, int> *dist, bool decided) {
 
     dfs(vehicle, reqs, numReqs, target, src_dst, path, schedule, dist, 0, 0,
         now_time + vehicle.get_time_to_next_node(), decided);
-
+    
     if (ansTravelled >= 0) {
         if (decided) {
             int tmp = numReqs + vehicle.get_num_passengers();
@@ -193,6 +197,10 @@ map<pair<int, int>, int> *dist, bool decided) {
             vehicle.set_path(ansPath);
             vehicle.set_passengers(ansSchedule);
         }
+        clock_t endClock = clock();
+        double this_time = (double(endClock - beginClock)) / CLOCKS_PER_SEC;
+        travel_max = max(travel_max, this_time);
+        travel_time += this_time;
         // for (int i = 0; i < ansPath.size(); i++) {
             // printf("%d, ", ansPath[i]);
         // }
@@ -200,7 +208,11 @@ map<pair<int, int>, int> *dist, bool decided) {
         // printf("%d\n", ansTravelled);
         return ansCost;
     } else {
-       return -1;
+        clock_t endClock = clock();
+        double this_time = (double(endClock - beginClock)) / CLOCKS_PER_SEC;
+        travel_max = max(travel_max, this_time);
+        travel_time += this_time;
+        return -1;
     }
 }
 

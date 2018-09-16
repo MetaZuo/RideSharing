@@ -17,7 +17,10 @@
 using namespace std;
 
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    char* reqFile = argv[1];
+    char* vehFile = argv[2];
     
     GRBEnv *env = new GRBEnv();
     env->set(GRB_IntParam_OutputFlag, 0);
@@ -31,7 +34,7 @@ int main() {
 
     vector<Vehicle> vehicles;
     vehicles.reserve(max_vehicle);
-    read_vehicles("input/test_vehicles.csv", vehicles);
+    read_vehicles(vehFile, vehicles);
     // printf("Vehicles read.\n");
 
     vector<Request> requests;
@@ -42,7 +45,7 @@ int main() {
 
     vector<Request> unserved;
 
-    FILE *in = get_requests_file("input/test_reqs.csv");
+    FILE *in = get_requests_file(reqFile);
 
     while (true) { // TODO last update?
         travel_time = 0;

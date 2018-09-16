@@ -27,6 +27,10 @@ public:
         available = true;
     }
 
+    bool isAvailable() {
+        return this->available;
+    }
+
     int get_location() {
         return this->location;
     }
@@ -146,12 +150,10 @@ public:
                     }
                     this->location = node;
                     this->scheduledPath.pop();
-                    if (schedTime >= nowTime) {
-                        this->available = true;
-                    }
                 }
                 if (schedTime >= nowTime) {
                     this->timeToNextNode = schedTime - nowTime;
+                    this->available = (this->timeToNextNode < time_step);
                     break;
                 }
             }

@@ -61,11 +61,13 @@ public:
         }
         Request *reqs[1];
         for (int i = 0; i < vehicles.size(); i++) {
-            for (int j = 0; j < requests.size(); j++) {
-                reqs[0] = &requests[j];
-                int cost = travel(vehicles[i], reqs, 1, dist, false);
-                if (cost >= 0) {
-                    add_edge_vehicle_req(i, j, cost);
+            if (vehicles[i].isAvailable()) {
+                for (int j = 0; j < requests.size(); j++) {
+                    reqs[0] = &requests[j];
+                    int cost = travel(vehicles[i], reqs, 1, dist, false);
+                    if (cost >= 0) {
+                        add_edge_vehicle_req(i, j, cost);
+                    }
                 }
             }
         }

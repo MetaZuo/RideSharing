@@ -51,7 +51,6 @@ void dfs(Vehicle& vehicle, Request *reqs[], int numReqs,
         for (int i = 0; i < numReqs; i++) {
             // exceed max waiting time
             if (!reqs[i]->onBoard && newTime > reqs[i]->reqTime + max_wait_sec) {
-                idx++;
                 continue;
             }
         }

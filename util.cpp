@@ -70,12 +70,14 @@ void update_vehicles(vector<Vehicle>& vehicles, vector<Request>& requests,
     }
 }
 
-void finish_all(vector<Vehicle>& vehicles, vector<Request>& unserved) {
+void finish_all(vector<Vehicle>& vehicles, vector<Request>& unserved,
+    map<pair<int, int>, int> *dist) {
+    
     int idx = 0;
     vector<Vehicle>::iterator it = vehicles.begin();
     for (; it != vehicles.end(); it++) {
         // printf("V #%d: ", idx++);
-        it->finish_route();
+        it->finish_route(dist);
     }
     vector<Request>::iterator iter = unserved.begin();
     for (; iter != unserved.end(); iter++) {

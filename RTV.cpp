@@ -274,7 +274,7 @@ class RTVGraph {
                     }
                     assignedVIdxes.insert(vIdx);
                 } catch (GRBException& e) {
-                    printf("%s\n", e.getMessage().c_str());
+                    // printf("%s\n", e.getMessage().c_str());
                 }
             }
 
@@ -294,14 +294,74 @@ public:
         numVehicles = 0;
         TIdxComparable::rtvGraph = this;
         double timeLimit = double(time_step) * 0.8 / rvGraph->get_vehicle_num();
-        printf("time limit = %f\n", timeLimit);
+        // printf("time limit = %f\n", timeLimit);
         for (int i = 0; i < vehicles.size(); i++) {
             if (rvGraph->has_vehicle(i)) {
                 build_single_vehicle(i, rvGraph, vehicles, requests, dist, timeLimit);
             }
         }
-        printf("begin to sort edges\n");
+        // printf("begin to sort edges\n");
         sort_edges();
+    }
+
+    void rebalance(GRBEnv *env,
+        vector<Vehicle>& vehicles, vector<Request>& unserved,
+        map<pair<int, int>, int> *dist) {
+        
+        GRBModel model = GRBModel(*env);
+        vector<int> idleVIds;
+        for (int i = 0; i < vehicles.size(); i++) {
+            if (vehicles[i].get_num_passengers() == 0) {
+                idleVIds.push_back(i);
+            }
+        }
+        int idleCnt = (int) idleVIds.size();
+        int unservedCnt = (int) unserved.size();
+
+        GRBVar **y = new GRBVar* [idleCnt];
+        for (int i = 0; i < idleCnt; i++) {
+            y[i] = model.addVars(unservedCnt, GRB_BINARY);
+        }
+
+        GRBLinExpr objective = 0;
+        GRBLinExpr totalEdgesCnt = 0;
+        GRBLinExpr *rEdgesCnt = new GRBLinExpr[unservedCnt];
+        for (int j = 0; j < unservedCnt; j++) {
+            rEdgesCnt[j] = 0;
+        }
+        for (int i = 0; i < idleCnt; i++) {
+            GRBLinExpr vEdgesCnt = 0;
+            for (int j = 0; j < unservedCnt; j++) {
+                objective += y[i][j] * get_dist(vehicles[i].get_location(), unserved[j].start, dist);
+                totalEdgesCnt += y[i][j];
+                vEdgesCnt += y[i][j];
+                rEdgesCnt[j] += y[i][j];
+            }
+            model.addConstr(vEdgesCnt <= 1.0 + minimal);
+        }
+        for (int j = 0; j < unservedCnt; j++) {
+            model.addConstr(rEdgesCnt[j] <= 1.0 + minimal);
+        }
+        model.addConstr(totalEdgesCnt == min(idleCnt, unservedCnt));
+        model.setObjective(objective, GRB_MINIMIZE);
+
+        model.optimize();
+
+        for (int i = 0; i < idleCnt; i++) {
+            for (int j = 0; j < unservedCnt; j++) {
+                double val = y[i][j].get(GRB_DoubleAttr_X);
+                if (val < 1.0 + minimal && val > 1.0 - minimal) {
+                    vehicles[i].head_for(unserved[j].start, dist);
+                    break;
+                }
+            }
+        }
+
+        delete[] rEdgesCnt;
+        for (int i = 0; i < idleCnt; i++) {
+            delete[] y[i];
+        }
+        delete[] y;
     }
 
     void solve(GRBEnv *env,
@@ -309,7 +369,7 @@ public:
         vector<Request>& unservedCollector,
         map<pair<int, int>, int> *dist) {
         
-        printf("Defining variables...\n");
+        // printf("Defining variables...\n");
         GRBModel model = GRBModel(*env);
         GRBVar **epsilon = new GRBVar* [numTrips];
         for (int i = 0; i < numTrips; i++) {
@@ -318,7 +378,7 @@ public:
         GRBVar *chi = model.addVars(numRequests, GRB_BINARY);
 
         // default initial values
-        printf("Initializing...\n");
+        // printf("Initializing...\n");
         for (int i = 0; i < numTrips; i++) {
             for (int j = 0; j < numVehicles; j++) {
                 epsilon[i][j].set(GRB_DoubleAttr_Start, 0.0);
@@ -331,7 +391,7 @@ public:
         map<int, set<int> >::iterator iterRV;
 
         // add constraints
-        printf("Adding constraint #1 ...\n");
+        // printf("Adding constraint #1 ...\n");
         for (int vIdx = 0; vIdx < numVehicles; vIdx++) {
             GRBLinExpr constr = 0;
             vector<int>& tIdxes = vIdx_tIdxes[vIdx];
@@ -342,7 +402,7 @@ public:
             }
             model.addConstr(constr <= 1.0 + minimal);
         }
-        printf("Adding constraint #2 ...\n");
+        // printf("Adding constraint #2 ...\n");
         for (iterRV = rId_tIdxes.begin(); iterRV != rId_tIdxes.end(); iterRV++) {
             GRBLinExpr constr = 0;
             int rId = iterRV->first;
@@ -365,7 +425,7 @@ public:
         }
 
         // greedy assignment
-        printf("Greedy assignment...\n");
+        // printf("Greedy assignment...\n");
         set<int> assignedRIds, assignedVIdxes;
         map<TIdxComparable, vector<pair<int, int> > >::iterator iterTV;
         vector<vector<pair<int, int> >::iterator> edgeIters, edgeEnds;
@@ -400,7 +460,7 @@ public:
 
         // build objective expression
         GRBLinExpr objective = 0;
-        printf("Generating objective expression...\n");
+        // printf("Generating objective expression...\n");
         for (int tIdx = 0; tIdx < numTrips; tIdx++) {
             vector<pair<int, int> >& vCostIdxes
                 = tIdx_vCostIdxes[TIdxComparable(tIdx)];
@@ -418,7 +478,7 @@ public:
         model.setObjective(objective, GRB_MINIMIZE);
 
         // solve
-        printf("Solving...\n");
+        // printf("Solving...\n");
         model.optimize();
 
         printf("numRequests = %d\n", numRequests);

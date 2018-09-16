@@ -6,24 +6,25 @@
 #include <set>
 #include "globals.cpp"
 #include "GPtree.cpp"
+#include "Request.cpp"
 using namespace std;
 
 class Vehicle {
     int location, timeToNextNode;
-    bool idle;
+    bool available;
     vector<Request> passengers;
     queue<pair<int, int> > scheduledPath;
 
 public:
     Vehicle(){
         timeToNextNode = 0;
-        idle = true;
+        available = true;
     }
 
     Vehicle(int location) {
         this->location = location;
         this->timeToNextNode = 0;
-        this->idle = true;
+        available = true;
     }
 
     int get_location() {
@@ -44,7 +45,12 @@ public:
 
     void print_passengers() {
         for (int i = 0; i < passengers.size(); i++) {
-            printf("%d, ", passengers[i].unique);
+            printf("%d: ", passengers[i].unique);
+            if (passengers[i].onBoard) {
+                printf("onboard, ");
+            } else {
+                printf("offboard, ");
+            }
         }
         printf("\n");
     }
@@ -96,42 +102,95 @@ public:
         this->passengers = psngrs;
     }
 
+    void head_for(int node, map<pair<int, int>, int> *dist) {
+        vector<int> order;
+        find_path(this->location, node, order);
+        while (!this->scheduledPath.empty()) {
+            this->scheduledPath.pop();
+        }
+        int tmpNode = this->location;
+        int tmpTime = this->timeToNextNode;
+        for (int i = 1; i < order.size(); i++) { // head is location itself
+            int d = get_dist(tmpNode, order[i], dist);
+            tmpTime += d / velocity;
+            this->scheduledPath.push(make_pair(tmpTime, order[i]));
+        }
+    }
+
     void update(int nowTime, vector<Request>& newRequests,
         map<pair<int, int>, int> *dist) {
         
         if (this->scheduledPath.empty()) {
             return;
         }
-        this->timeToNextNode = 0;
-        while (!this->scheduledPath.empty()) {
-            int schedTime = this->scheduledPath.front().first;
-            int node = this->scheduledPath.front().second;
-            if (!this->idle) {
-                total_dist += get_dist(this->location, node, dist);
-            } else {
-                this->idle = false;
+        if (this->timeToNextNode < time_step) {
+            while (!this->scheduledPath.empty()) {
+                // TODO all these
+                int schedTime = this->scheduledPath.front().first;
+                int node = this->scheduledPath.front().second;
+
+                if (schedTime < nowTime || schedTime - nowTime < time_step) {
+                    if (!this->passengers.empty()) {
+                        int onboardCnt = 0;
+                        for (int i = 0; i < this->passengers.size(); i++) {
+                            if (this->passengers[i].scheduledOnTime < schedTime) {
+                                onboardCnt++;
+                            }
+                            if (this->passengers[i].scheduledOffTime < schedTime) {
+                                onboardCnt--;
+                            }
+                        }
+                        if (onboardCnt > 0) {
+                            total_dist += get_dist(this->location, node, dist);
+                        }
+                    }
+                    this->location = node;
+                    this->scheduledPath.pop();
+                    if (schedTime >= nowTime) {
+                        this->available = true;
+                    }
+                }
+                if (schedTime >= nowTime) {
+                    this->timeToNextNode = schedTime - nowTime;
+                    break;
+                }
             }
-            this->location = node;
-            this->scheduledPath.pop();
-            if (schedTime >= nowTime) {
-                this->timeToNextNode = schedTime - nowTime;
-                break;
+        } else {
+            this->timeToNextNode -= time_step;
+            this->available = (this->timeToNextNode < time_step);
+            if (this->available) {
+                int schedTime = this->scheduledPath.front().first;
+                int node = this->scheduledPath.front().second;
+                if (!this->passengers.empty()) {
+                    int onboardCnt = 0;
+                    for (int i = 0; i < this->passengers.size(); i++) {
+                        if (this->passengers[i].scheduledOnTime < schedTime) {
+                            onboardCnt++;
+                        }
+                        if (this->passengers[i].scheduledOffTime < schedTime) {
+                            onboardCnt--;
+                        }
+                    }
+                    if (onboardCnt > 0) {
+                        total_dist += get_dist(this->location, node, dist);
+                    }
+                }
+                this->location = node;
+                this->scheduledPath.pop();
             }
         }
-        if (this->scheduledPath.empty()) {
-            this->idle = true;
-        }
 
-        int nextArriveTime = nowTime + this->timeToNextNode;
-
+        int baseTime = this->available ?
+            nowTime + this->timeToNextNode
+            : nowTime;
         vector<Request> newPassengers;
         vector<Request>::iterator iterPsngr = this->passengers.begin();
         for (; iterPsngr != this->passengers.end(); iterPsngr++) {
             // hasn't got on board
-            if (iterPsngr->scheduledOnTime > nextArriveTime) {
+            if (iterPsngr->scheduledOnTime > baseTime) {
                 newRequests.push_back(*iterPsngr);
                 printf("%d waiting, ", iterPsngr->unique);
-            } else if (iterPsngr->scheduledOffTime <= nextArriveTime) {
+            } else if (iterPsngr->scheduledOffTime <= baseTime) {
                 // already got off
                 // TODO add into results
                 served_reqs++;
@@ -157,14 +216,37 @@ public:
         }
     }
 
-    void finish_route() {
-        vector<Request>::iterator iterPsngr = this->passengers.begin();
-        for (; iterPsngr != this->passengers.end(); iterPsngr++) {
-            served_reqs++;
-            // printf("%d on, ", iterPsngr->unique);
-            servedUids.insert(iterPsngr->unique);
+    void finish_route(map<pair<int, int>, int> *dist) {
+        if (!this->passengers.empty()) {
+            vector<Request>::iterator iterPsngr = this->passengers.begin();
+            for (; iterPsngr != this->passengers.end(); iterPsngr++) {
+                served_reqs++;
+                // printf("%d on, ", iterPsngr->unique);
+                servedUids.insert(iterPsngr->unique);
+            }
+            // printf("\n");
+
+            while (!this->scheduledPath.empty()) {
+                int schedTime = this->scheduledPath.front().first;
+                int node = this->scheduledPath.front().second;
+                if (!this->passengers.empty()) {
+                    int onboardCnt = 0;
+                    for (int i = 0; i < this->passengers.size(); i++) {
+                        if (this->passengers[i].scheduledOnTime < schedTime) {
+                            onboardCnt++;
+                        }
+                        if (this->passengers[i].scheduledOffTime < schedTime) {
+                            onboardCnt--;
+                        }
+                    }
+                    if (onboardCnt > 0) {
+                        total_dist += get_dist(this->location, node, dist);
+                    }
+                }
+                this->location = node;
+                this->scheduledPath.pop();
+            }
         }
-        // printf("\n");
     }
 };
 

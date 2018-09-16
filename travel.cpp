@@ -193,7 +193,6 @@ map<pair<int, int>, int> *dist, bool decided) {
         if (decided) {
             int tmp = numReqs + vehicle.get_num_passengers();
             int schcnt = ansSchedule.size();
-            assert (tmp == schcnt);
             vehicle.set_path(ansPath);
             vehicle.set_passengers(ansSchedule);
         }

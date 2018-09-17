@@ -191,20 +191,19 @@ public:
             // hasn't got on board
             if (iterPsngr->scheduledOnTime > baseTime) {
                 newRequests.push_back(*iterPsngr);
-                printf("%d waiting, ", iterPsngr->unique);
+                // printf("%d waiting, ", iterPsngr->unique);
             } else if (iterPsngr->scheduledOffTime <= baseTime) {
                 // already got off
-                // TODO add into results
                 served_reqs++;
-                printf("%d off, ", iterPsngr->unique);
+                // printf("%d off, ", iterPsngr->unique);
                 total_wait_time += iterPsngr->scheduledOnTime - iterPsngr->reqTime;
             } else { // now on board
                 iterPsngr->onBoard = true;
-                printf("%d on, ", iterPsngr->unique);
+                // printf("%d on, ", iterPsngr->unique);
                 newPassengers.push_back(*iterPsngr);
             }
         }
-        printf("\n");
+        // printf("\n");
         this->passengers = newPassengers;
     }
 

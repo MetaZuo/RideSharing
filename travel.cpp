@@ -184,14 +184,34 @@ map<pair<int, int>, int> *dist, bool decided) {
     // path.push_back(vehicle.location);
     vector<Request> schedule;
 
+    int beginTime = now_time + vehicle.get_time_to_next_node();
+
     dfs(vehicle, reqs, numReqs, target, src_dst, path, schedule, dist, 0, 0,
-        now_time + vehicle.get_time_to_next_node(), decided);
+        beginTime, decided);
     
     if (ansTravelled >= 0) {
         if (decided) {
             int tmp = numReqs + vehicle.get_num_passengers();
             int schcnt = ansSchedule.size();
-            vehicle.set_path(ansPath);
+
+            vector<int> order;
+            vector<pair<int, int> > finalPath;
+            int prevNode = vehicle.get_location();
+            int passedDist = 0;
+            vector<pair<int, int> >::iterator it = ansPath.begin();
+            for (; it != ansPath.end(); it++) {
+                int node = it->second;
+                order.clear();
+                find_path(prevNode - 1, node - 1, order);
+                order[0] += 1;
+                for (int i = 1; i < order.size(); i++) {
+                    order[i] += 1;
+                    passedDist += get_dist(order[i - 1], order[i], dist);
+                    finalPath.push_back(make_pair(beginTime + passedDist / velocity, order[i]));
+                }
+                prevNode = node;
+            }
+            vehicle.set_path(finalPath);
             vehicle.set_passengers(ansSchedule);
         }
         clock_t endClock = clock();

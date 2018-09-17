@@ -481,29 +481,29 @@ public:
         // printf("Solving...\n");
         model.optimize();
 
-        printf("numRequests = %d\n", numRequests);
-        printf("Assigned vehicle-trip pairs:\n");
+        // printf("numRequests = %d\n", numRequests);
+        // printf("Assigned vehicle-trip pairs:\n");
         int cnt = 0;
         for (int vIdx = 0; vIdx < numVehicles; vIdx++) {
             for (int tIdx = 0; tIdx < numTrips; tIdx++) {
                 double val = epsilon[tIdx][vIdx].get(GRB_DoubleAttr_X);
                 if (val < 1.0 + minimal && val > 1.0 - minimal) {
-                    printf("Vehicle #%d: [", vIds[vIdx]);
+                    // printf("Vehicle #%d: [", vIds[vIdx]);
                     Vehicle& vehicle = vehicles[vIds[vIdx]];
                     Request *reqs[max_capacity];
                     int tripSize = 0;
                     vector<int>::iterator iter = trips[tIdx].begin();
-                    printf("%d", requests[*iter].unique);
+                    // printf("%d", requests[*iter].unique);
                     reqs[tripSize++] = &requests[*iter];
                     cnt++;
                     iter++;
                     while (iter != trips[tIdx].end()) {
-                        printf(", %d", requests[*iter].unique);
+                        // printf(", %d", requests[*iter].unique);
                         reqs[tripSize++] = &requests[*iter];
                         cnt++;
                         iter++;
                     }
-                    printf("]\n");
+                    // printf("]\n");
 
                     // update passengers of vehicle
                     travel(vehicle, reqs, tripSize, dist, true);
@@ -512,30 +512,20 @@ public:
                 }
             }
         }
-        printf("Number of served requests: %d\n\n", cnt);
+        // printf("Number of served requests: %d\n\n", cnt);
 
         unservedCollector.clear();
         cnt = 0;
-        printf("Requests not served: [");
-        /*
-        for (iterRV = rId_tIdxes.begin(); iterRV != rId_tIdxes.end(); iterRV++) {
-            if (chi[iterRV->first].get(GRB_DoubleAttr_X) > 1.0 - minimal) {
-                unservedCollector.push_back(requests[iterRV->first]);
-                printf("%d, ", requests[iterRV->first].unique);
-                cnt++;
-            }
-        }
-         */
         for (int rId = 0; rId < numRequests; rId++) {
             if (rId_tIdxes.find(rId) == rId_tIdxes.end() ||
                 chi[rId].get(GRB_DoubleAttr_X) > 1.0 - minimal) {
                 unservedCollector.push_back(requests[rId]);
-                printf("%d, ", requests[rId].unique);
+                // printf("%d, ", requests[rId].unique);
                 cnt++;
             }
         }
-        printf("]\n");
-        printf("Number of unserved requests: %d\n", cnt);
+        // printf("]\n");
+        // printf("Number of unserved requests: %d\n", cnt);
 
         delete[] chi;
         for (int i = 0; i < numTrips; i++) {

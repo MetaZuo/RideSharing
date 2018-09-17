@@ -61,7 +61,7 @@ public:
         }
         Request *reqs[1];
         for (int i = 0; i < vehicles.size(); i++) {
-            if (vehicles[i].isAvailable()) {
+            if (vehicles[i].isAvailable() && vehicles[i].get_num_passengers() < max_capacity) {
                 for (int j = 0; j < requests.size(); j++) {
                     reqs[0] = &requests[j];
                     int cost = travel(vehicles[i], reqs, 1, dist, false);

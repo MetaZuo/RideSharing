@@ -2,6 +2,7 @@
 #define _TRAVEL_CPP_
 
 #include <cstdio>
+#include <cmath>
 #include <cassert>
 #include <ctime>
 #include <map>
@@ -46,7 +47,7 @@ void dfs(Vehicle& vehicle, Request *reqs[], int numReqs,
         int node = tmpTarget[idx];
 
         int interDist = get_dist(prevLoc, node, dist);
-        int newTime = nowTime + interDist / velocity;
+        int newTime = nowTime + ceil((double(interDist)) / velocity);
 
         for (int i = 0; i < numReqs; i++) {
             // exceed max waiting time
@@ -207,7 +208,7 @@ map<pair<int, int>, int> *dist, bool decided) {
                 for (int i = 1; i < order.size(); i++) {
                     order[i] += 1;
                     passedDist += get_dist(order[i - 1], order[i], dist);
-                    finalPath.push_back(make_pair(beginTime + passedDist / velocity, order[i]));
+                    finalPath.push_back(make_pair(beginTime + ceil((double(passedDist)) / velocity), order[i]));
                 }
                 prevNode = node;
             }

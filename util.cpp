@@ -40,14 +40,16 @@ bool read_requests(FILE*& in, vector<Request>& requests, int toTime,
     while (num != EOF) {
         num = fscanf(in, "%d,%d,%d\n", &reqTime, &start, &end);
         if (num != EOF) {
-            Request r(start, end, reqTime);
-            r.shortestDist = get_dist(start, end, dist);
-            r.expectedOffTime = reqTime + r.shortestDist / velocity;
-            requests.push_back(r);
-            raw_dist += r.shortestDist;
-            total_reqs++;
-            if (reqTime > toTime) {
-                return true;
+            if (start != end) {
+                Request r(start, end, reqTime);
+                r.shortestDist = get_dist(start, end, dist);
+                r.expectedOffTime = reqTime + ceil((double(r.shortestDist)) / velocity);
+                requests.push_back(r);
+                raw_dist += r.shortestDist;
+                total_reqs++;
+                if (reqTime > toTime) {
+                    return true;
+                }
             }
         }
     }
@@ -60,6 +62,8 @@ void handle_unserved(vector<Request>& unserved, vector<Request>& requests,
     vector<Request>::iterator iter = unserved.begin();
     for (; iter != unserved.end(); iter++) {
         if (nowTime - iter->reqTime <= max_wait_sec) {
+            iter->onBoard = false;
+            iter->scheduledOnTime = -1;
             requests.push_back(*iter);
         } else {
             unserved_dist += iter->shortestDist;

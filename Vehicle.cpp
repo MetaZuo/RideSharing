@@ -1,6 +1,7 @@
 #ifndef _VEHICLE_CPP_
 #define _VEHICLE_CPP_
 
+#include <cmath>
 #include <vector>
 #include <queue>
 #include <set>
@@ -108,15 +109,18 @@ public:
 
     void head_for(int node, map<pair<int, int>, int> *dist) {
         vector<int> order;
-        find_path(this->location, node, order);
+        find_path(this->location - 1, node - 1, order);
         while (!this->scheduledPath.empty()) {
             this->scheduledPath.pop();
         }
+        int distTravelled = 0;
         int tmpNode = this->location;
-        int tmpTime = this->timeToNextNode;
+        int baseTime = (this->timeToNextNode < time_step) ?
+            now_time + this->timeToNextNode : now_time - this->timeToNextNode;
         for (int i = 1; i < order.size(); i++) { // head is location itself
-            int d = get_dist(tmpNode, order[i], dist);
-            tmpTime += d / velocity;
+            order[i] += 1;
+            distTravelled += get_dist(tmpNode, order[i], dist);
+            int tmpTime = baseTime + ceil((double(distTravelled)) / velocity);
             this->scheduledPath.push(make_pair(tmpTime, order[i]));
         }
     }

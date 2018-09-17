@@ -17,10 +17,16 @@ void read_vehicles(const char* file, vector<Vehicle>& vehicles) {
     FILE *in = NULL;
     in = fopen(file, "r");
     int loc;
-    for (int i = 0; i < max_vehicle; i++) {
-        fscanf(in, "%d\n", &loc);
-        vehicles.push_back(Vehicle(loc));
+    int num = 0;
+    max_vehicle = 0;
+    while (num != EOF) {
+        num = fscanf(in, "%d\n", &loc);
+        if (num != EOF) {
+            vehicles.push_back(Vehicle(loc));
+            max_vehicle++;
+        }
     }
+    printf("max vehicle = %d\n", max_vehicle);
     fclose(in);
 }
 
@@ -96,6 +102,7 @@ void print_stats() {
      */
     printf("Dratio = %f\n", double(total_dist + unserved_dist) / raw_dist);
     printf("Eratio = %f\n", double(total_dist) / (raw_dist - unserved_dist));
+    printf("Total waiting time = %d\n", total_wait_time);
 }
 
 #endif

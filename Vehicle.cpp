@@ -197,7 +197,7 @@ public:
                 // TODO add into results
                 served_reqs++;
                 printf("%d off, ", iterPsngr->unique);
-                servedUids.insert(iterPsngr->unique);
+                total_wait_time += iterPsngr->scheduledOnTime - iterPsngr->reqTime;
             } else { // now on board
                 iterPsngr->onBoard = true;
                 printf("%d on, ", iterPsngr->unique);
@@ -224,7 +224,7 @@ public:
             for (; iterPsngr != this->passengers.end(); iterPsngr++) {
                 served_reqs++;
                 // printf("%d on, ", iterPsngr->unique);
-                servedUids.insert(iterPsngr->unique);
+                total_wait_time += iterPsngr->scheduledOnTime - iterPsngr->reqTime;
             }
             // printf("\n");
 

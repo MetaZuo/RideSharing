@@ -26,7 +26,7 @@ void read_vehicles(const char* file, vector<Vehicle>& vehicles) {
             max_vehicle++;
         }
     }
-    printf("max vehicle = %d\n", max_vehicle);
+    // printf("max vehicle = %d\n", max_vehicle);
     fclose(in);
 }
 

@@ -153,7 +153,6 @@ void dfs(Vehicle& vehicle, Request *reqs[], int numReqs,
             target.erase(*iterRec);
         }
         // printf("\n## b\n");
-        idx++;
     }
 }
 

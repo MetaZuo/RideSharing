@@ -21,6 +21,8 @@ int main(int argc, char* argv[]) {
 
     char* reqFile = argv[1];
     char* vehFile = argv[2];
+    char* outFile = argv[3];
+    max_capacity = atoi(argv[4]);
     
     GRBEnv *env = new GRBEnv();
     env->set(GRB_IntParam_OutputFlag, 0);
@@ -52,7 +54,7 @@ int main(int argc, char* argv[]) {
         travel_max = 0;
         travel_cnt = 0;
         now_time += time_step;
-        printf("\nNow time = %d\n", now_time);
+        // printf("\nNow time = %d\n", now_time);
 
         clock_t tick = clock();
 
@@ -72,33 +74,33 @@ int main(int argc, char* argv[]) {
         update_vehicles(vehicles, requests, now_time, dist);
 
         clock_t t1 = clock();
-        printf("preprocessing time = %f\n", (double(t1 - tick)) / CLOCKS_PER_SEC);
+        // printf("preprocessing time = %f\n", (double(t1 - tick)) / CLOCKS_PER_SEC);
 
         RVGraph *RV = new RVGraph(vehicles, requests, dist);
 
         clock_t t2 = clock();
-        printf("RV Building time = %f\n", (double(t2 - t1)) / CLOCKS_PER_SEC);
+        // printf("RV Building time = %f\n", (double(t2 - t1)) / CLOCKS_PER_SEC);
 
         RTVGraph *RTV = new RTVGraph(RV, vehicles, requests, dist);
 
         clock_t t3 = clock();
-        printf("RTV Building time = %f\n", (double(t3 - t2)) / CLOCKS_PER_SEC);
+        // printf("RTV Building time = %f\n", (double(t3 - t2)) / CLOCKS_PER_SEC);
 
         RTV->solve(env, vehicles, requests, unserved, dist);
 
         clock_t t4 = clock();
-        printf("Solving time = %f\n", (double(t4 - t3)) / CLOCKS_PER_SEC);
+        // printf("Solving time = %f\n", (double(t4 - t3)) / CLOCKS_PER_SEC);
 
         RTV->rebalance(env, vehicles, unserved, dist);
 
         clock_t t5 = clock();
-        printf("Rebalancing time = %f\n", (double(t5 - t4)) / CLOCKS_PER_SEC);
+        // printf("Rebalancing time = %f\n", (double(t5 - t4)) / CLOCKS_PER_SEC);
 
         delete RV;
         delete RTV;
 
         clock_t tock = clock();
-        printf("travel / total = %f / %f\n", travel_time, (double(tock - tick)) / CLOCKS_PER_SEC);
+        // printf("travel / total = %f / %f\n", travel_time, (double(tock - tick)) / CLOCKS_PER_SEC);
 
         if (!hasMore) {
             break;
@@ -106,7 +108,7 @@ int main(int argc, char* argv[]) {
     }
     finish_all(vehicles, unserved, dist);
 
-    print_stats();
+    print_stats(outFile);
 
     fclose(in);
 

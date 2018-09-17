@@ -2,6 +2,8 @@
 #define _UTIL_CPP_
 
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <map>
 #include "GPtree.cpp"
 using namespace std;
@@ -91,18 +93,14 @@ void finish_all(vector<Vehicle>& vehicles, vector<Request>& unserved,
     }
 }
 
-void print_stats() {
-    printf("\nService rate: %d / %d = %f\n",
+void print_stats(char* outFile) {
+    FILE *out = fopen(outFile, "w");
+    fprintf(out, "Service rate: %d / %d = %f\n",
         served_reqs, total_reqs, (double(served_reqs)) / total_reqs);
-    /*
-    for (set<int>::iterator it = servedUids.begin(); it != servedUids.end(); it++) {
-        printf("%d, ", *it);
-    }
-    printf("\n");
-     */
-    printf("Dratio = %f\n", double(total_dist + unserved_dist) / raw_dist);
-    printf("Eratio = %f\n", double(total_dist) / (raw_dist - unserved_dist));
-    printf("Total waiting time = %d\n", total_wait_time);
+    fprintf(out, "Dratio = %f\n", double(total_dist + unserved_dist) / raw_dist);
+    fprintf(out, "Eratio = %f\n", double(total_dist) / (raw_dist - unserved_dist));
+    fprintf(out, "Total waiting time = %d\n", total_wait_time);
+    fclose(out);
 }
 
 #endif

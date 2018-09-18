@@ -2,7 +2,19 @@
 
 Reimplementation of paper [1].
 
-Under developing.
+### Dependencies
+
+- metis
+- Gurobi
+
+### Usage
+
+```
+make
+./Main <requests_file> <vehicles_file> <output_file> <max_capacity>
+```
+
+
 
 ### References
 

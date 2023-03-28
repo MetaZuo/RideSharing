@@ -1,6 +1,6 @@
 ## Ride Sharing
 
-Reimplementation of paper [1].
+An __UNOFFICIAL__ implementation of paper [1].
 
 ### Dependencies
 
@@ -14,6 +14,9 @@ make
 ./Main <requests_file> <vehicles_file> <output_file> <max_capacity>
 ```
 
+### Data
+
+Please see [this issue](https://github.com/MetaZuo/RideSharing/issues/1).
 
 
 ### References

@@ -6,7 +6,7 @@ using namespace std;
 int now_time;
 int total_reqs, served_reqs;
 long long total_dist, unserved_dist, raw_dist;
-int total_wait_time;
+int total_wait_time, total_delay_time;
 
 double travel_time;
 int travel_cnt;

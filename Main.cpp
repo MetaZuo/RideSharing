@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
     total_reqs = served_reqs = 0;
     total_dist = unserved_dist = raw_dist = 0;
     total_wait_time = 0;
+    total_delay_time = 0;
 
     map<pair<int, int>, int> *dist = new map<pair<int, int>, int>;
     initialize(true);

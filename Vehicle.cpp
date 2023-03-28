@@ -201,6 +201,7 @@ public:
                 served_reqs++;
                 // printf("%d off, ", iterPsngr->unique);
                 total_wait_time += iterPsngr->scheduledOnTime - iterPsngr->reqTime;
+                total_delay_time += iterPsngr->scheduledOffTime - iterPsngr->expectedOffTime;
             } else { // now on board
                 iterPsngr->onBoard = true;
                 // printf("%d on, ", iterPsngr->unique);
@@ -228,6 +229,7 @@ public:
                 served_reqs++;
                 // printf("%d on, ", iterPsngr->unique);
                 total_wait_time += iterPsngr->scheduledOnTime - iterPsngr->reqTime;
+                total_delay_time += iterPsngr->scheduledOffTime - iterPsngr->expectedOffTime;
             }
             // printf("\n");
 

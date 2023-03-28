@@ -104,6 +104,7 @@ void print_stats(char* outFile) {
     fprintf(out, "Dratio = %f\n", double(total_dist + unserved_dist) / raw_dist);
     fprintf(out, "Eratio = %f\n", double(total_dist) / (raw_dist - unserved_dist));
     fprintf(out, "Total waiting time = %d\n", total_wait_time);
+    fprintf(out, "Total delay time = %d\n", total_delay_time);
     fclose(out);
 }
 

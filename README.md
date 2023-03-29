@@ -1,6 +1,11 @@
-## Ride Sharing
+# Ride Sharing
 
 An __UNOFFICIAL__ implementation of paper [1].
+
+Not under active maintenance.
+
+This project was developed at a time when there were no open-source implementations available.
+In recent years, several community-maintained projects supporting the algorithm proposed in this paper have emerged, which can be found by searching for the paper title on GitHub. It is recommended that those interested turn to these projects for a better experience.
 
 ### Dependencies
 

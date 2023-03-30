@@ -29,6 +29,8 @@ Please see [this issue](https://github.com/MetaZuo/RideSharing/issues/1).
 
 `Main.cpp` invokes the function `void initialize(bool load_cache)` from `GPtree.cpp`, with the argument `true` to load the already-built data structure `GP_Tree.data` to memory. __If you want to work on another road network instead of the NYC, please 1) backup `COL.co` and `cal.edge` and then replace them with the corresponding node and edge files of your road network but keep the file names (sorry for the hard-coding), and 2) replace the invocation with `initialize(false)` for the first run.__ A new tree will be built from your road network and cached to `GP_Tree.data`. Once the cache file is built, you can change back to `initialize(true)` to avoid building the tree again.
 
+The file `GP_Tree.data` was ignored from the repo because it was too large (~280 MB for NYC). Therefore you have to first generate it via `initialize(false)` anyway.
+
 See https://github.com/MetaZuo/RideSharing/issues/1#issuecomment-1490077275
 
 
